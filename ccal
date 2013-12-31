@@ -1,0 +1,152 @@
+#!/usr/bin/perl
+
+use utf8;
+use warnings;
+use strict;
+
+use POSIX qw(ceil mktime);
+use Calendar::China;
+use Encode qw(encode decode);
+use Getopt::Long;
+
+my $stdout_enc;
+if ( exists $ENV{LC_ALL} && $ENV{LC_ALL} =~ /gbk/i || exists $ENV{LANG} && $ENV{LANG} =~ /gbk/i) {    
+    $stdout_enc = "gbk";    
+}
+if ( exists $ENV{LC_ALL} && $ENV{LC_ALL} =~ /utf\-?8/i || exists $ENV{LANG} && $ENV{LANG} =~ /utf\-8/i) {
+    $stdout_enc = "utf8";    
+}
+
+binmode STDOUT, ":encoding($stdout_enc)";
+
+
+our $now = time;
+our ($t_year, $t_month, $t_day) = (localtime $now)[5, 4, 3];
+
+my ($opt_y, $opt_help);
+my $res = GetOptions(
+    "y" => \$opt_y,
+    "help" => \$opt_help,
+    "h" => \$opt_help
+);
+
+if ( $opt_help ) {
+    print_useage();
+    exit;    
+}
+
+if ( $opt_y) {
+    if ( @ARGV) {
+        draw_year($ARGV[0]);
+        exit;        
+    } else {
+        draw_this_year();        
+    }    
+    exit;    
+}
+
+if ( @ARGV == 1) {    
+    if ( $ARGV[0] >=1 && $ARGV[0] <= 12) {
+        draw_month($t_year + 1900, $ARGV[0]);
+        exit
+    } else {
+        draw_year($ARGV[0]);
+        exit
+    }
+} elsif ( @ARGV >= 2) {
+    if ( $ARGV[1] >= 1 && $ARGV[1] <= 12) {
+        draw_month($ARGV[0], $ARGV[1]);
+        exit;        
+    } else {
+        print_useage();
+        exit;        
+    }
+} else {
+    draw_month($t_year + 1900, $t_month + 1);
+    exit;    
+}
+
+
+sub print_useage {
+    print <<EOF;
+Useage:
+    显示当前月的日历:
+       ccal
+    显示当前年的日历:
+       ccal -y
+    显示当前年9月份的日历:
+       ccal 9
+    显示公元1983年的日历:
+       ccal 1983
+    显示公元2012年12月份的日历:
+       ccal 2012 12
+    显示公元9年的日历:
+       ccal -y 9    
+EOF
+    
+}
+
+sub draw_year {
+    my $year = shift;
+    for ( 1 .. 12) {
+            draw_month($year, $_);
+    }
+}
+
+sub draw_this_year {
+    draw_year($t_year + 1900);
+    exit;    
+}
+
+
+
+
+sub draw_month {
+    my ($year, $month) = (@_);    
+    my $first_this_mon = mktime(0, 0, 0, 1, $month - 1, $year - 1900, 0, 0, -1);    
+    my $wday_of_first = (localtime $first_this_mon)[6];
+    my $days_this_mon;
+    if ($month == 2) {
+        $days_this_mon = ((($year) % 100 == 0) ? (($year) % 400 == 0 ? 29 : 28) : (($year) % 4 == 0 ? 29 :28));    
+    } elsif ( exists {1, 1, 3, 3, 5, 5, 7, 7, 8, 8, 10, 10, 12, 12}->{$month} ) {
+        $days_this_mon = 31;    
+    } elsif ( exists {4, 4, 6, 6, 9, 9, 11, 11}->{$month}) {
+        $days_this_mon = 30;    
+    }
+
+    my $row_total = ceil(($days_this_mon + $wday_of_first) / 7);
+    print "          \033[31m$year 年 $month 月\033[0m\n";    
+    print "日   一   二   三   四   五   六   \n\n";
+    for ( my $i = 0; $i < $row_total; $i++) {
+        for (my $j = 0; $j < 7; $j++) {
+            if ($i == 0 && $j < $wday_of_first || $i * 7 + $j - $wday_of_first > $days_this_mon - 1 ) {
+                print " " x 5;            
+            } else {
+                my $day = $i * 7 + $j - $wday_of_first + 1;            
+                if ( $year == $t_year + 1900 && $month == $t_month + 1 && $day == $t_day) {
+                    printf "\033[5;41;34m%-4s\033[0m", $day;                    
+                } else {
+                    printf "%-4s ", $day;
+                }                
+            }               
+        }
+        print "\n";
+        for (my $j = 0; $j < 7; $j++) {
+            if ($i == 0 && $j < $wday_of_first || $i * 7 + $j - $wday_of_first > $days_this_mon - 1) {
+                print " " x 5;            
+            } else {
+                my $china_day = decode "utf8", Calendar->new_from_Gregorian($month, $i * 7 + $j - $wday_of_first + 1, $year)->convert_to_China();
+                $china_day =~ s/初一//g;
+                $china_day = substr $china_day, -2;
+                $china_day =~ s/一月/11月/;                
+                my $day = $i * 7 + $j - $wday_of_first + 1;            
+                if ( $year == $t_year + 1900 && $month == $t_month + 1 && $day == $t_day) {
+                    printf "\033[5;41;34m%2s\033[0m", $china_day;                    
+                } else {
+                    printf "%2s ", $china_day;                      
+                }
+            }               
+        }
+        print "\n\n";
+    }
+}

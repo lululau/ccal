@@ -1,0 +1,48 @@
+Calendar version 0.01
+=====================
+
+DESCRIPTION
+
+This module implement pure perl extension to convert between different
+calendar system. The algorithm is from emacs calendar library. The
+author is Edward M. Reingold <reingold@cs.uiuc.edu>.
+
+INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+BASIC USAGE
+
+   use Calendar;
+   my $date = Calendar->new_from_Gregorian(12, 16, 2006);
+   print $date->date_string("Gregorian date: %M %W %d %Y"), "\n";
+
+   my $newdate = $date + 7;
+   print $date->date_string("Gregorian date of next week: %D"), "\n";
+   
+   $newdate = $date-7;
+   print $newdate->date_string("Absolute date of last week: %A\n");
+   
+   my $diff = $date-$newdate;
+   printf "There is %d days between %s and %s\n",
+       $diff, $date->date_string("%D"), $newdate->date_string("%D");
+   
+   $date->convert_to_Julian;
+   print $date->date_string("Julian date: %M %W %d %Y"), "\n";
+   
+COPYRIGHT AND LICENCE
+
+Put the correct copyright and licence information here.
+
+Copyright (C) 2006 by ywb
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8.7 or,
+at your option, any later version of Perl 5 you may have available.
+
+

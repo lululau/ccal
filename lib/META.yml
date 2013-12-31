@@ -1,0 +1,34 @@
+---
+name: Calendar
+version: v0.4.2
+author:
+  - 'Ye Wenbin <wenbinye@gmail.com>'
+abstract: Perl extension for calendar convertion
+license: perl
+resources:
+  license: http://dev.perl.org/licenses/
+provides:
+  Calendar:
+    file: lib/Calendar.pm
+    version: !!perl/hash:version
+      qv: 1
+      version:
+        - 0
+        - 4
+        - 2
+  Calendar::Calendar:
+    file: lib/Calendar/Calendar.pm
+  Calendar::China:
+    file: lib/Calendar/China.pm
+  Calendar::Gregorian:
+    file: lib/Calendar/Gregorian.pm
+  Calendar::Julian:
+    file: lib/Calendar/Julian.pm
+  Calendar::Lunar:
+    file: lib/Calendar/Lunar.pm
+  Calendar::Solar:
+    file: lib/Calendar/Solar.pm
+generated_by: Module::Build version 0.2805
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2
