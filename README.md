@@ -30,7 +30,9 @@ git clone https://github.com/lululau/ccal
 cd ccal/
 sudo cp ccal /usr/local/bin
 cd lib/
-sudo perl Makefile.PL
+perl Makefile.PL
+make
+sudo make install
 
 ccal --help
 ```
