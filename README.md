@@ -25,6 +25,14 @@
 
 ## 安装
 
+### macOS
+
+```
+brew install lululau/utils/ccal
+```
+
+### Linux
+
 ```
 git clone https://github.com/lululau/ccal
 cd ccal/
